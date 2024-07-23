@@ -1,4 +1,6 @@
 import Animated, {
+  Extrapolate,
+  Extrapolation,
   clamp,
   interpolate,
   useAnimatedScrollHandler,
@@ -13,6 +15,7 @@ import {
   Image,
   colors,
   List,
+  IS_IOS,
 } from "@/ui";
 import { Link, useRouter } from "expo-router";
 import { Platform, SafeAreaView, StatusBar } from "react-native";
@@ -34,12 +37,8 @@ export default function DiscoverScreen() {
   const scrollY = useSharedValue(0);
 
   const scrollHandler = useAnimatedScrollHandler({
-    onScroll: (event, ctx: { prevY: number }) => {
-      const diff = event.contentOffset.y - ctx.prevY;
-      scrollY.value = clamp(scrollY.value + diff, 0, HEADER_HEIGHT);
-    },
-    onBeginDrag: (event, ctx: { prevY: number }) => {
-      ctx.prevY = event.contentOffset.y;
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
     },
   });
 
@@ -47,8 +46,13 @@ export default function DiscoverScreen() {
     const headerY = interpolate(
       scrollY.value,
       [0, HEADER_HEIGHT],
-      [0, -HEADER_HEIGHT]
+      [0, -HEADER_HEIGHT],
+      Extrapolation.CLAMP
     );
+
+    console.log("SCROLL Y:", scrollY.value);
+    console.log("HEADER Y:", headerY);
+
     return {
       transform: [{ translateY: headerY }],
     };
@@ -92,7 +96,7 @@ export default function DiscoverScreen() {
         className="flex flex-1 flex-grow px-6"
         onScroll={scrollHandler}
         scrollEventThrottle={16}
-        style={{ paddingTop: HEADER_HEIGHT + insets.top }}
+        style={{ paddingTop: IS_IOS ? insets.top : HEADER_HEIGHT }}
       >
         <SearchBar placeholder="Discover more people here" />
         <List
