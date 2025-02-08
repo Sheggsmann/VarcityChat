@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, VirtualizedList } from "react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Bubble,
@@ -27,6 +27,7 @@ import { useAuth } from "@/core/hooks/use-auth";
 import { useRealm } from "@realm/react";
 import { convertToGiftedChatMessage } from "@/core/utils";
 import { Ionicons } from "@expo/vector-icons";
+import { RealmObject } from "realm/dist/public-types/namespace";
 
 const MESSAGES_PER_PAGE = 50;
 const MESSAGE_ARCHIVE_THRESHOLD = 1000; // Archive messages beyound this count
@@ -44,40 +45,106 @@ export default function ChatMessage() {
   const insets = useSafeAreaInsets();
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [text, setText] = useState("");
+  const [isLoadingEarlier, setIsLoadingEarlier] = useState(false);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const currentPage = useRef(1);
+  const listRef = useRef<VirtualizedList<IMessage>>(null);
 
   const swipeableRef = useRef<Swipeable | null>(null);
   const [replyMessage, setReplyMessage] = useState<IMessage | null>(null);
 
-  useEffect(() => {
-    const messages = realm
-      .objects<ExtendedMessage>("Message")
-      .filtered(`conversationId == $0`, conversationId)
-      .sorted("createdAt", true);
+  // clean up old functions
+  const cleanupOldMessages = () => {};
 
-    console.log("MESSAGES FROM REALM:", messages);
-
-    messages.addListener((messages) => {
-      console.log("NEW MESSAGES FROM LISTENER:", messages);
-      setMessages(
-        messages.map((message) =>
-          convertToGiftedChatMessage(message as unknown as ExtendedMessage)
+  // load messages with virtualized support
+  const loadMessages = useCallback(
+    (page: number) => {
+      const skip = (page - 1) * MESSAGES_PER_PAGE;
+      return realm
+        .objects<ExtendedMessage>("Message")
+        .filtered(
+          "conversationId == $0 AND isArchived == false",
+          conversationId
         )
-      );
-    });
+        .sorted("createdAt", true)
+        .slice(skip, skip + MESSAGES_PER_PAGE);
+    },
+    [realm, conversationId]
+  );
 
+  // initialize messages and set up cleanup
+  useEffect(() => {
+    const initialMessages = loadMessages(currentPage.current);
+    setHasMoreMessages(initialMessages.length > MESSAGES_PER_PAGE);
+
+    // Setup message listener for new messages only
+    const messageListener = realm
+      .objects<ExtendedMessage>("Message")
+      .filtered("conversationId == $0 AND isArchived == false", conversationId);
+
+    // setup listener for new messages only
+    const listener: Realm.CollectionChangeCallback<
+      RealmObject<ExtendedMessage, never> & ExtendedMessage
+    > = (collection, changes) => {
+      // Only process insertions (new messages)
+      if (changes.insertions.length > 0) {
+        // Get the newest message (first insertion)
+        const newMessageIndex = changes.insertions[0];
+        const newMessage = collection[newMessageIndex];
+
+        console.log("NEW MESSAGE", newMessage);
+
+        if (newMessage) {
+          const giftedMessage = convertToGiftedChatMessage(newMessage);
+          setMessages((prevMessages) => {
+            if (!prevMessages.find((msg) => msg._id === newMessage.localId)) {
+              console.log("FOUND MESSAGE");
+              return [giftedMessage, ...prevMessages];
+            }
+            return prevMessages;
+          });
+        }
+      }
+    };
+
+    messageListener.addListener(listener);
+
+    // set initial messages
     setMessages(
-      messages.map((message) =>
+      initialMessages.map((message) =>
         convertToGiftedChatMessage(message as unknown as ExtendedMessage)
       )
     );
 
     return () => {
-      messages.removeAllListeners();
+      messageListener.removeListener(listener);
     };
-  }, [realm, conversationId]);
+  }, [realm, conversationId, loadMessages]);
 
+  // Load earlier messages
+  const onLoadEarlier = useCallback(async () => {
+    if (isLoadingEarlier || !hasMoreMessages) return;
+
+    setIsLoadingEarlier(true);
+    const nextPage = currentPage.current + 1;
+    const olderMessages = loadMessages(nextPage);
+
+    if (olderMessages.length > 0) {
+      currentPage.current = nextPage;
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        ...olderMessages.map((message) =>
+          convertToGiftedChatMessage(message as ExtendedMessage)
+        ),
+      ]);
+      setHasMoreMessages(olderMessages.length === MESSAGES_PER_PAGE);
+    } else {
+      setHasMoreMessages(false);
+    }
+    setIsLoadingEarlier(false);
+  }, [loadMessages, isLoadingEarlier, hasMoreMessages]);
+
+  // Optimized send function
   const onSend = useCallback(
     (messages: IMessage[]) => {
       const [message] = messages;
@@ -87,13 +154,57 @@ export default function ChatMessage() {
           content: message.text,
           sender: user!._id,
           receiver: activeChatUser!._id,
-        } as unknown as ExtendedMessage,
+        } as ExtendedMessage,
         conversationId as string
       );
-      console.log("MESSAGE TO SEND", messages);
     },
     [conversationId, user, activeChatUser, sendMessage]
   );
+
+  // useEffect(() => {
+  //   const messages = realm
+  //     .objects<ExtendedMessage>("Message")
+  //     .filtered(`conversationId == $0`, conversationId)
+  //     .sorted("createdAt", true);
+
+  //   console.log("MESSAGES FROM REALM:", messages);
+
+  //   messages.addListener((messages) => {
+  //     console.log("NEW MESSAGES FROM LISTENER:", messages);
+  //     setMessages(
+  //       messages.map((message) =>
+  //         convertToGiftedChatMessage(message as unknown as ExtendedMessage)
+  //       )
+  //     );
+  //   });
+
+  //   setMessages(
+  //     messages.map((message) =>
+  //       convertToGiftedChatMessage(message as unknown as ExtendedMessage)
+  //     )
+  //   );
+
+  //   return () => {
+  //     messages.removeAllListeners();
+  //   };
+  // }, [realm, conversationId]);
+
+  // const onSend = useCallback(
+  //   (messages: IMessage[]) => {
+  //     const [message] = messages;
+  //     sendMessage(
+  //       {
+  //         conversationId: conversationId as string,
+  //         content: message.text,
+  //         sender: user!._id,
+  //         receiver: activeChatUser!._id,
+  //       } as unknown as ExtendedMessage,
+  //       conversationId as string
+  //     );
+  //     console.log("MESSAGE TO SEND", messages);
+  //   },
+  //   [conversationId, user, activeChatUser, sendMessage]
+  // );
 
   const updateRowRef = useCallback(
     (ref: any) => {
@@ -147,6 +258,12 @@ export default function ChatMessage() {
           onSend={(messages: any) => onSend(messages)}
           user={{ _id: user!._id }}
           onInputTextChanged={setText}
+          loadEarlier={hasMoreMessages}
+          isLoadingEarlier={isLoadingEarlier}
+          onLoadEarlier={onLoadEarlier}
+          infiniteScroll={true}
+          renderAvatarOnTop={false}
+          showUserAvatar={false}
           bottomOffset={insets.bottom}
           renderAvatar={null}
           maxComposerHeight={100}
