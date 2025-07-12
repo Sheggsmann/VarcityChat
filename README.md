@@ -110,12 +110,14 @@ Below are some screenshots showcasing VarcityChat's key features:
 
 ### Signup Screen
 
-![Signup Screen](VarcityChat/screenshots/signup.png)
+<!-- ![Signup Screen](VarcityChat/screenshots/signup.png) -->
+<img src="VarcityChat/screenshots/signup.png" alt="Signup Screen" width="300">
 _Description_: The signup screen allows students to register with their university email and create a profile.
 
 ### Chat Interface
 
-![Chat Interface](VarcityChat/screenshots/chat.jpeg)
+<!-- ![Chat Interface](VarcityChat/screenshots/chat.jpeg) -->
+<img src="VarcityChat/screenshots/chat.jpeg" alt="Chat Interface" width="300">
 _Description_: The WhatsApp-inspired chat interface supports real-time messaging with typing indicators and read receipts.
 
 ## License
