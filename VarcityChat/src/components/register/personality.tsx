@@ -59,15 +59,6 @@ export default function Personality() {
       return;
     }
 
-    if (relationshipStatus === null) {
-      showToast({
-        type: "error",
-        text1: "Missing information",
-        text2: "Please select your relationship status",
-      });
-      return;
-    }
-
     if (lookingFor === null) {
       showToast({
         type: "error",
@@ -139,7 +130,7 @@ export default function Personality() {
         firstname: signupData?.firstname,
         lastname: signupData?.lastname,
         course: signupData?.course,
-        relationshipStatus,
+        relationshipStatus: relationshipStatus || undefined,
         lookingFor,
         images: successfulUploads,
         about: description,
@@ -187,7 +178,7 @@ export default function Personality() {
         </View>
 
         <View className="mt-2">
-          <Text className="font-sans">Relationship Status</Text>
+          <Text className="font-sans">Relationship Status (?)</Text>
           <View className="flex flex-row flex-wrap gap-4 py-3">
             <TouchableOpacity
               activeOpacity={0.7}

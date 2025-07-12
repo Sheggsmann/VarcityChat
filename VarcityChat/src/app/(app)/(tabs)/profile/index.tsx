@@ -209,7 +209,11 @@ export default function ProfileScreen() {
           {/* Header */}
           <Text className="text-grey-500 mt-8 dark:text-grey-200">Safety</Text>
 
-          <SettingsItem name="tndc" label="Terms and conditions" />
+          <SettingsItem
+            name="tndc"
+            label="Terms of use & Privacy policy"
+            onPress={() => router.push("/tnc")}
+          />
 
           <SettingsItem
             name="support"

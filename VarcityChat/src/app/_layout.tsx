@@ -125,6 +125,12 @@ function RootLayoutNav() {
         name="login"
         options={{ gestureEnabled: false, animation: "none" }}
       />
+      <Stack.Screen
+        name="tnc"
+        options={{
+          presentation: "modal",
+        }}
+      />
     </Stack>
   );
 }

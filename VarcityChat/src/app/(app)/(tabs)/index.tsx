@@ -121,7 +121,7 @@ export default function DiscoverScreen() {
             })
           }
           activeOpacity={0.7}
-          className={`flex flex-1 h-[130px] mb-8 
+          className={`flex flex-1 h-[130px] mb-8 ${index > 2 ? "mt-4" : ""}
           ${(index + 1) % 3 === 0 ? "ml-2" : ""}
           ${(index + 1) % 3 === 1 ? "mr-2" : ""}
           ${(index + 1) % 3 === 2 ? "mx-1" : ""}
