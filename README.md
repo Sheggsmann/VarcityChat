@@ -87,13 +87,13 @@ To run VarcityChat locally, follow these steps:
 6. **Run the backend**:
 
    ```bash
-   cd backend
+   cd VarcityBackend
    yarn start
    ```
 
 7. **Run the frontend**:
    ```bash
-   cd frontend
+   cd VarcityChat
    yarn start
    ```
    Follow React Native instructions to run the app on a simulator or physical device.
