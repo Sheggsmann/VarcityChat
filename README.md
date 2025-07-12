@@ -61,14 +61,14 @@ To run VarcityChat locally, follow these steps:
 2. **Install backend dependencies**:
 
    ```bash
-   cd backend
+   cd VarcityBackend
    yarn install
    ```
 
 3. **Install frontend dependencies**:
 
    ```bash
-   cd ../frontend
+   cd ../VarcityChat
    yarn install
    ```
 
