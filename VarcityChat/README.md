@@ -1,50 +1,123 @@
-# Welcome to your Expo app 👋
+# VarcityChat
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+VarcityChat is a social platform designed to connect students from different universities, fostering communication and community through a robust chat system. The app features a seamless signup and registration process and a sophisticated chat section inspired by WhatsApp, enabling real-time messaging between users.
 
-## Get started
+## Table of Contents
 
-1. Install dependencies
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Architecture](#architecture)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Screenshots](#screenshots)
+- [License](#license)
+
+## Features
+
+- **User Registration and Authentication**: Secure signup and login for students using email and password.
+- **Real-Time Chat**: WhatsApp-like chat functionality with real-time messaging, typing indicators, and read receipts.
+- **University-Based Communities**: Connects students from various universities, allowing them to join groups or direct message peers.
+- **Scalable Messaging Queue**: Handles high message throughput with Redis and BullMQ for asynchronous processing.
+- **Cross-Platform**: Built with React Native for a consistent experience on iOS and Android.
+
+## Tech Stack
+
+- **Frontend**: React Native, TypeScript
+- **Backend**: Node.js, TypeScript
+- **Database**: Redis for caching and session management
+- **Queue Management**: BullMQ for handling asynchronous tasks like message delivery
+- **Deployment**: Render for hosting and scaling
+- **Other Tools**: WebSocket for real-time communication, JWT for authentication
+
+## Architecture
+
+VarcityChat follows a client-server architecture:
+
+- **Client**: React Native app handles the user interface, including signup forms and chat screens, communicating with the backend via REST APIs and WebSockets.
+- **Server**: Node.js backend manages user authentication, message routing, and group management. Redis stores session data and caches frequently accessed information.
+- **Queue**: BullMQ processes tasks like sending messages or notifications asynchronously to ensure scalability.
+- **Real-Time Communication**: WebSocket enables instant messaging with low latency.
+
+## Installation
+
+To run VarcityChat locally, follow these steps:
+
+### Prerequisites
+
+- Node.js (v16 or higher)
+- Redis (v6 or higher)
+- Yarn or npm
+- React Native environment setup (for mobile development)
+
+### Steps
+
+1. **Clone the repository**:
 
    ```bash
-   npm install
+   git clone https://github.com/your-username/varcitychat.git
+   cd varcitychat
    ```
 
-2. Start the app
+2. **Install backend dependencies**:
 
    ```bash
-    npx expo start
+   cd backend
+   yarn install
    ```
 
-In the output, you'll find options to open the app in a
+3. **Install frontend dependencies**:
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+   ```bash
+   cd ../frontend
+   yarn install
+   ```
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+4. **Set up environment variables**:
+   Create a `.env` file in the `backend` directory with the following:
 
-## Get a fresh project
+   ```env
+   REDIS_URL=redis://localhost:6379
+   JWT_SECRET=your_jwt_secret
+   PORT=3000
+   ```
 
-When you're ready, run:
+5. **Start Redis**:
+   Ensure Redis is running locally or provide a remote Redis URL in the `.env` file.
 
-```bash
-npm run reset-project
-```
+6. **Run the backend**:
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+   ```bash
+   cd backend
+   yarn start
+   ```
 
-## Learn more
+7. **Run the frontend**:
+   ```bash
+   cd frontend
+   yarn start
+   ```
+   Follow React Native instructions to run the app on a simulator or physical device.
 
-To learn more about developing your project with Expo, look at the following resources:
+## Usage
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+1. **Signup**: Open the app, navigate to the signup section, and register with your university email.
+2. **Chat**: After logging in, browse university groups or start a direct chat with another student.
+3. **Real-Time Messaging**: Send and receive messages instantly, with support for typing indicators and read receipts.
 
-## Join the community
+## Screenshots
 
-Join our community of developers creating universal apps.
+Below are some screenshots showcasing VarcityChat's key features:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### Signup Screen
+
+![Signup Screen](screenshots/signup.png)
+_Description_: The signup screen allows students to register with their university email and create a profile.
+
+### Chat Interface
+
+![Chat Interface](screenshots/chat.jpeg)
+_Description_: The WhatsApp-inspired chat interface supports real-time messaging with typing indicators and read receipts.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
